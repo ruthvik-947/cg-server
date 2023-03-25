@@ -1,9 +1,10 @@
 from flask import Flask, request
+import secrets
 import openai
 
 app = Flask(__name__)
 
-api_key = "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"
+api_key = secrets.OPENAI_API_KEY
 model_engine = "gpt-3.5-turbo"
 engine = None
 openai.api_key = api_key
@@ -19,7 +20,7 @@ def index():
 def read():
   data = request.get_json()
   exercise_prompt = "Summarise this in Italian: "
-  text = exercise_prompt + data["text"]
+  text = exercise_prompt + data["content"]
 
   completions = engine.complete(prompt=text, max_tokens=5)
   message = completions.choices[0].text
