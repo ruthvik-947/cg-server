@@ -1,31 +1,37 @@
 from flask import Flask, request
+from flask_cors import CORS, cross_origin
 import openai
 import config
 
 app = Flask(__name__)
+CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
-model = 'davinci'
+model = 'gpt-3.5-turbo'
 openai.api_key = config.OPENAI_API_KEY
 
 
 @app.route('/')
+@cross_origin()
 def index():
   return "ChatGepetto is sentient."
 
 
 @app.route("/api/read", methods=["POST"])
+@cross_origin()
 def read():
   data = request.get_json()
-  exercise_prompt = "Summarise this in Italian: "
-  text = exercise_prompt + data["content"]
+  system_prompt = "You are a helpful Italian language instructor! You're careful and friendly."
+  exercise_prompt = "Explain in Italian what the following passage is about: "
+  user_prompt = exercise_prompt + data["content"]
 
-  completions = openai.Completion.create(model=model,
-                                         prompt=text,
-                                         max_tokens=7,
-                                         temperature=0)
+  completions = openai.ChatCompletion.create(model=model, 
+                            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+                            max_tokens=100,
+                            temperature=0)
 
   print(completions)
-  message = completions.choices[0].text
+  message = completions.choices[0].message.content
 
   return message
 
